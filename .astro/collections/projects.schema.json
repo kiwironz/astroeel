@@ -1,0 +1,113 @@
+{
+  "$ref": "#/definitions/projects",
+  "definitions": {
+    "projects": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "featured": {
+          "type": "boolean",
+          "default": false
+        },
+        "category": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "heroImage": {
+          "type": "string"
+        },
+        "images": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "client": {
+          "type": "string"
+        },
+        "challenge": {
+          "type": "string"
+        },
+        "solution": {
+          "type": "string"
+        },
+        "technologies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "testimonial": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "author": {
+              "type": "string"
+            },
+            "company": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "text",
+            "author"
+          ],
+          "additionalProperties": false
+        },
+        "specifications": {
+          "type": "object",
+          "properties": {
+            "power": {
+              "type": "string"
+            },
+            "range": {
+              "type": "string"
+            },
+            "battery": {
+              "type": "string"
+            },
+            "connectivity": {
+              "type": "string"
+            },
+            "sensors": {
+              "type": "string"
+            },
+            "operating_temp": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "$schema": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "description",
+        "date",
+        "category",
+        "tags",
+        "heroImage",
+        "technologies"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}

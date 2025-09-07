@@ -1,0 +1,366 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout 
+  title="Embedded Electronics Limited - Custom IoT Solutions & Electronic Devices"
+  description="Bespoke electronic solutions, IoT devices, sensors, and automation systems. From concept to working prototype. Serving businesses across New Zealand and beyond."
+  keywords="custom electronics, IoT solutions, bespoke sensors, electronic prototypes, automation systems, embedded systems, LoRaWAN, New Zealand electronics">
+
+<section class="hero">
+  <div class="hero-container">
+    <div class="hero-content">
+      <h1>Custom Electronic Solutions for Your Unique Challenges</h1>
+      <p class="hero-subtitle">From innovative sensor systems to complete IoT solutions, I design and build electronic devices that solve real-world problems others can't.</p>
+      <div class="hero-stats">
+        <div class="stat">
+          <strong>25+</strong>
+          <span>Years Experience</span>
+        </div>
+        <div class="stat">
+          <strong>100+</strong>
+          <span>Projects Delivered</span>
+        </div>
+        <div class="stat">
+          <strong>One-Off</strong>
+          <span>Bespoke Solutions</span>
+        </div>
+      </div>
+      <div class="hero-cta">
+        <a href="/projects" class="btn-primary">View Projects</a>
+        <a href="/contact" class="btn-secondary">Discuss Your Project</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="/images/hero-device.jpg" alt="Custom electronic device with sensors and LoRaWAN capability" />
+    </div>
+  </div>
+</section>
+
+<section class="capabilities">
+  <div class="container">
+    <h2>What I Can Build for You</h2>
+    <div class="capabilities-grid">
+      <div class="capability">
+        <h3>🔬 Sensor Systems</h3>
+        <p>Custom monitoring solutions using temperature, humidity, motion, pressure, and specialized sensors. Battery-optimized designs for years of operation.</p>
+      </div>
+      <div class="capability">
+        <h3>📡 IoT & Wireless</h3>
+        <p>LoRaWAN, WiFi, cellular connectivity. Send data anywhere, trigger notifications, integrate with existing systems like Alexa or email.</p>
+      </div>
+      <div class="capability">
+        <h3>⚙️ Automation</h3>
+        <p>Motorized valves, pumps, actuators controlled by your custom logic. Perfect for industrial processes, agriculture, or building automation.</p>
+      </div>
+      <div class="capability">
+        <h3>🧠 Smart Devices</h3>
+        <p>Microcontroller-based solutions with custom firmware. Can integrate AI/ML capabilities for local decision-making and pattern recognition.</p>
+      </div>
+      <div class="capability">
+        <h3>🔧 Complete Solutions</h3>
+        <p>From circuit design to PCB fabrication, 3D printed enclosures, and mobile apps. End-to-end development of your concept.</p>
+      </div>
+      <div class="capability">
+        <h3>🏭 Industrial Grade</h3>
+        <p>Robust designs for harsh environments. Food-safe materials, IP-rated enclosures, temperature extremes, and industrial protocols.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="featured-projects">
+  <div class="container">
+    <h2>Recent Projects</h2>
+    <div class="projects-grid">
+      <div class="project-card">
+        <img src="/images/mailbox-monitor.jpg" alt="LoRaWAN mailbox monitoring system" />
+        <div class="project-content">
+          <h3>Smart Mailbox Monitor</h3>
+          <p>LoRaWAN-enabled device that detects mail delivery and sends notifications via email and Alexa. Reed switch sensor with 3D printed mounts for easy retrofit.</p>
+          <div class="project-tags">
+            <span>LoRaWAN</span>
+            <span>Battery Optimized</span>
+            <span>3D Printed</span>
+          </div>
+        </div>
+      </div>
+      <div class="project-card">
+        <img src="/images/first-flush.jpg" alt="Automated first flush diverter system" />
+        <div class="project-content">
+          <h3>First Flush Water Diverter</h3>
+          <p>Automated system that monitors rainfall and diverts the first flush to waste before collecting clean water in storage tanks. Motorized valve control.</p>
+          <div class="project-tags">
+            <span>Automation</span>
+            <span>Weather Resistant</span>
+            <span>Motor Control</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="projects-cta">
+      <a href="/projects" class="btn-primary">View All Projects</a>
+    </div>
+  </div>
+</section>
+
+<section class="industries">
+  <div class="container">
+    <h2>Types of Situations I've Solved</h2>
+    <div class="industries-grid">
+      <div class="industry">
+        <h4>Manufacturing</h4>
+        <p>Equipment monitoring, quality control, process automation</p>
+      </div>
+      <div class="industry">
+        <h4>Food & Beverage</h4>
+        <p>Temperature alerts, fermentation monitoring, batch tracking</p>
+      </div>
+      <div class="industry">
+        <h4>Agriculture</h4>
+        <p>Soil monitoring, irrigation control, livestock tracking</p>
+      </div>
+      <div class="industry">
+        <h4>Property Management</h4>
+        <p>Security systems, building monitoring, energy tracking</p>
+      </div>
+      <div class="industry">
+        <h4>Research</h4>
+        <p>Data collection, experiment control, custom instrumentation</p>
+      </div>
+      <div class="industry">
+        <h4>Marine & Remote</h4>
+        <p>Weather monitoring, asset tracking, communication systems</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</Layout>
+
+<style>
+  .hero {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 4rem 0;
+    margin-top: -1px;
+  }
+  
+  .hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  
+  .hero h1 {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+  }
+  
+  .hero-stats {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .stat {
+    text-align: center;
+  }
+  
+  .stat strong {
+    display: block;
+    font-size: 1.5rem;
+    color: var(--accent);
+  }
+  
+  .stat span {
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+  
+  .hero-cta {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .btn-primary, .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+  
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background: #0052a3;
+    transform: translateY(-2px);
+  }
+  
+  .btn-secondary {
+    background: white;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+  }
+  
+  .btn-secondary:hover {
+    background: var(--accent);
+    color: white;
+  }
+  
+  .hero-image img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  
+  section {
+    padding: 4rem 0;
+  }
+  
+  h2 {
+    text-align: center;
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 3rem;
+  }
+  
+  .capabilities-grid, .projects-grid, .industries-grid {
+    display: grid;
+    gap: 2rem;
+  }
+  
+  .capabilities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+  
+  .capability {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  
+  .capability h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+  }
+  
+  .projects-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    margin-bottom: 3rem;
+  }
+  
+  .project-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+  }
+  
+  .project-card:hover {
+    transform: translateY(-4px);
+  }
+  
+  .project-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .project-content {
+    padding: 1.5rem;
+  }
+  
+  .project-content h3 {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .project-tags {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .project-tags span {
+    background: var(--secondary);
+    color: var(--text-light);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+  }
+  
+  .projects-cta {
+    text-align: center;
+  }
+  
+  .industries-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  .industry {
+    text-align: center;
+    padding: 1.5rem;
+  }
+  
+  .industry h4 {
+    color: var(--primary);
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .industry p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 768px) {
+    .hero-container {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    
+    .hero h1 {
+      font-size: 2rem;
+    }
+    
+    .hero-stats {
+      justify-content: center;
+    }
+    
+    .hero-cta {
+      justify-content: center;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .capabilities-grid, .projects-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

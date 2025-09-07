@@ -1,0 +1,434 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const allProjects = await getCollection('projects');
+const sortedProjects = allProjects.sort((a, b) => 
+  new Date(b.data.date).getTime() - new Date(a.data.date).getTime()
+);
+
+const featuredProjects = sortedProjects.filter(project => project.data.featured);
+const otherProjects = sortedProjects.filter(project => !project.data.featured);
+
+const categories = [...new Set(allProjects.map(project => project.data.category))];
+---
+
+<Layout 
+  title="Custom Electronics Projects - EEL Portfolio"
+  description="Browse our portfolio of custom electronic devices, IoT solutions, and automation systems. From concept to working prototype."
+  keywords="electronics portfolio, custom devices, IoT projects, sensor systems, automation, electronic prototypes">
+
+<section class="projects-hero">
+  <div class="container">
+    <h1>Project Portfolio</h1>
+    <p class="hero-subtitle">Custom electronic solutions that solve real-world challenges</p>
+  </div>
+</section>
+
+<section class="projects-filter">
+  <div class="container">
+    <div class="filter-buttons">
+      <button class="filter-btn active" data-filter="all">All Projects</button>
+      {categories.map(category => (
+        <button class="filter-btn" data-filter={category.toLowerCase().replace(/\s+/g, '-')}>
+          {category}
+        </button>
+      ))}
+    </div>
+  </div>
+</section>
+
+{featuredProjects.length > 0 && (
+  <section class="featured-section">
+    <div class="container">
+      <h2>Featured Projects</h2>
+      <div class="projects-grid featured">
+        {featuredProjects.map(project => (
+          <article class="project-card featured-card" data-category={project.data.category.toLowerCase().replace(/\s+/g, '-')}>
+            <div class="project-image">
+              <img 
+                src={`/images/projects/${project.slug}/${project.data.heroImage}`} 
+                alt={project.data.title}
+                loading="lazy"
+              />
+              <div class="project-overlay">
+                <div class="project-tags">
+                  {project.data.tags.slice(0, 3).map(tag => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+            <div class="project-content">
+              <div class="project-meta">
+                <span class="category">{project.data.category}</span>
+                <span class="date">{new Date(project.data.date).toLocaleDateString()}</span>
+              </div>
+              <h3>
+                <a href={`/projects/${project.slug}/`}>{project.data.title}</a>
+              </h3>
+              <p>{project.data.description}</p>
+              <div class="project-footer">
+                <div class="technologies">
+                  {project.data.technologies.slice(0, 3).map(tech => (
+                    <span class="tech">{tech}</span>
+                  ))}
+                </div>
+                <a href={`/projects/${project.slug}/`} class="read-more">
+                  View Project →
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<section class="all-projects">
+  <div class="container">
+    {!featuredProjects.length && <h2>All Projects</h2>}
+    <div class="projects-grid">
+      {otherProjects.map(project => (
+        <article class="project-card" data-category={project.data.category.toLowerCase().replace(/\s+/g, '-')}>
+          <div class="project-image">
+            <img 
+              src={`/images/projects/${project.slug}/${project.data.heroImage}`} 
+              alt={project.data.title}
+              loading="lazy"
+            />
+          </div>
+          <div class="project-content">
+            <div class="project-meta">
+              <span class="category">{project.data.category}</span>
+              <span class="date">{new Date(project.data.date).toLocaleDateString()}</span>
+            </div>
+            <h3>
+              <a href={`/projects/${project.slug}/`}>{project.data.title}</a>
+            </h3>
+            <p>{project.data.description}</p>
+            <div class="project-footer">
+              <div class="technologies">
+                {project.data.technologies.slice(0, 2).map(tech => (
+                  <span class="tech">{tech}</span>
+                ))}
+              </div>
+              <a href={`/projects/${project.slug}/`} class="read-more">
+                View Details →
+              </a>
+            </div>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+</Layout>
+
+<style>
+  .projects-hero {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 3rem 0;
+    text-align: center;
+  }
+  
+  .projects-hero h1 {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .projects-filter {
+    padding: 2rem 0;
+    background: white;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 70px;
+    z-index: 50;
+  }
+  
+  .filter-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .filter-btn {
+    padding: 0.5rem 1.25rem;
+    border: 2px solid var(--border);
+    background: white;
+    color: var(--text);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+  }
+  
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  
+  .featured-section {
+    padding: 4rem 0;
+    background: #fafbfc;
+  }
+  
+  .featured-section h2 {
+    text-align: center;
+    font-size: 2.2rem;
+    color: var(--primary);
+    margin-bottom: 3rem;
+  }
+  
+  .all-projects {
+    padding: 4rem 0;
+  }
+  
+  .projects-grid {
+    display: grid;
+    gap: 2rem;
+  }
+  
+  .projects-grid.featured {
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  }
+  
+  .projects-grid:not(.featured) {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+  
+  .project-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+  }
+  
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  }
+  
+  .featured-card {
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  }
+  
+  .featured-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  }
+  
+  .project-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+  }
+  
+  .featured-card .project-image {
+    height: 280px;
+  }
+  
+  .project-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+  
+  .project-card:hover .project-image img {
+    transform: scale(1.05);
+  }
+  
+  .project-overlay {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  
+  .project-card:hover .project-overlay {
+    opacity: 1;
+  }
+  
+  .project-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .tag {
+    background: rgba(255,255,255,0.9);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .project-content {
+    padding: 1.5rem;
+  }
+  
+  .featured-card .project-content {
+    padding: 2rem;
+  }
+  
+  .project-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+  }
+  
+  .category {
+    background: var(--secondary);
+    color: var(--accent);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 500;
+  }
+  
+  .date {
+    color: var(--text-light);
+  }
+  
+  .project-content h3 {
+    margin-bottom: 0.75rem;
+  }
+  
+  .project-content h3 a {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 1.25rem;
+  }
+  
+  .featured-card .project-content h3 a {
+    font-size: 1.5rem;
+  }
+  
+  .project-content h3 a:hover {
+    color: var(--accent);
+  }
+  
+  .project-content p {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  
+  .project-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+  
+  .technologies {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+  
+  .tech {
+    background: #f0f8ff;
+    color: var(--accent);
+    padding: 0.2rem 0.6rem;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .read-more {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: color 0.3s;
+  }
+  
+  .read-more:hover {
+    color: var(--primary);
+  }
+  
+  .project-card.hidden {
+    display: none;
+  }
+  
+  @media (max-width: 768px) {
+    .projects-hero h1 {
+      font-size: 2rem;
+    }
+    
+    .projects-grid.featured,
+    .projects-grid:not(.featured) {
+      grid-template-columns: 1fr;
+    }
+    
+    .filter-buttons {
+      gap: 0.5rem;
+    }
+    
+    .filter-btn {
+      padding: 0.4rem 1rem;
+      font-size: 0.9rem;
+    }
+    
+    .project-footer {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+  }
+</style>
+
+<script>
+  // Project filtering functionality
+  document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const projectCards = document.querySelectorAll('.project-card');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        const filter = this.getAttribute('data-filter');
+        
+        // Update active button
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Filter projects
+        projectCards.forEach(card => {
+          const category = card.getAttribute('data-category');
+          if (filter === 'all' || category === filter) {
+            card.classList.remove('hidden');
+          } else {
+            card.classList.add('hidden');
+          }
+        });
+      });
+    });
+  });
+</script>

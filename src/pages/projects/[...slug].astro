@@ -1,0 +1,608 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: project,
+  }));
+}
+
+const project = Astro.props;
+const { Content } = await project.render();
+
+const relatedProjects = (await getCollection('projects'))
+  .filter(p => p.slug !== project.slug && p.data.category === project.data.category)
+  .slice(0, 2);
+---
+
+<Layout 
+  title={`${project.data.title} - Custom Electronics Project`}
+  description={project.data.description}
+  keywords={`${project.data.tags.join(', ')}, custom electronics, ${project.data.category}`}
+  ogImage={`/images/projects/${project.slug}/${project.data.heroImage}`}>
+
+<article class="project-detail">
+  <!-- Hero Section -->
+  <section class="project-hero">
+    <div class="hero-container">
+      <div class="hero-content">
+        <nav class="breadcrumb">
+          <a href="/">Home</a>
+          <span>›</span>
+          <a href="/projects">Projects</a>
+          <span>›</span>
+          <span>{project.data.title}</span>
+        </nav>
+        
+        <div class="project-meta">
+          <span class="category">{project.data.category}</span>
+          <span class="date">{new Date(project.data.date).toLocaleDateString()}</span>
+        </div>
+        
+        <h1>{project.data.title}</h1>
+        <p class="project-description">{project.data.description}</p>
+        
+        <div class="project-tags">
+          {project.data.tags.map(tag => (
+            <span class="tag">{tag}</span>
+          ))}
+        </div>
+      </div>
+      
+      <div class="hero-image">
+        <img 
+          src={`/images/projects/${project.slug}/${project.data.heroImage}`}
+          alt={project.data.title}
+        />
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Info Cards -->
+  {(project.data.challenge || project.data.solution || project.data.client) && (
+    <section class="quick-info">
+      <div class="container">
+        <div class="info-cards">
+          {project.data.challenge && (
+            <div class="info-card">
+              <h3>🎯 Challenge</h3>
+              <p>{project.data.challenge}</p>
+            </div>
+          )}
+          {project.data.solution && (
+            <div class="info-card">
+              <h3>💡 Solution</h3>
+              <p>{project.data.solution}</p>
+            </div>
+          )}
+          {project.data.client && (
+            <div class="info-card">
+              <h3>👥 Client</h3>
+              <p>{project.data.client}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Main Content -->
+  <section class="project-content">
+    <div class="container">
+      <div class="content-grid">
+        <div class="main-content">
+          <Content />
+        </div>
+        
+        <aside class="project-sidebar">
+          <!-- Technologies -->
+          <div class="sidebar-card">
+            <h4>Technologies Used</h4>
+            <div class="tech-list">
+              {project.data.technologies.map(tech => (
+                <span class="tech-item">{tech}</span>
+              ))}
+            </div>
+          </div>
+          
+          <!-- Specifications -->
+          {project.data.specifications && (
+            <div class="sidebar-card">
+              <h4>Specifications</h4>
+              <dl class="spec-list">
+                {project.data.specifications.power && (
+                  <>
+                    <dt>Power</dt>
+                    <dd>{project.data.specifications.power}</dd>
+                  </>
+                )}
+                {project.data.specifications.range && (
+                  <>
+                    <dt>Range</dt>
+                    <dd>{project.data.specifications.range}</dd>
+                  </>
+                )}
+                {project.data.specifications.battery && (
+                  <>
+                    <dt>Battery Life</dt>
+                    <dd>{project.data.specifications.battery}</dd>
+                  </>
+                )}
+                {project.data.specifications.connectivity && (
+                  <>
+                    <dt>Connectivity</dt>
+                    <dd>{project.data.specifications.connectivity}</dd>
+                  </>
+                )}
+                {project.data.specifications.operating_temp && (
+                  <>
+                    <dt>Operating Temp</dt>
+                    <dd>{project.data.specifications.operating_temp}</dd>
+                  </>
+                )}
+              </dl>
+            </div>
+          )}
+          
+          <!-- Contact CTA -->
+          <div class="sidebar-card cta-card">
+            <h4>Interested in Something Similar?</h4>
+            <p>Every project is unique. Let's discuss your specific requirements.</p>
+            <a href="/contact" class="btn-primary">Start a Conversation</a>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- Image Gallery -->
+  {project.data.images && project.data.images.length > 0 && (
+    <section class="project-gallery">
+      <div class="container">
+        <h3>Project Gallery</h3>
+        <div class="gallery-grid">
+          {project.data.images.map((image, index) => (
+            <div class="gallery-item">
+              <img 
+                src={`/images/projects/${project.slug}/${image}`}
+                alt={`${project.data.title} - Image ${index + 1}`}
+                loading="lazy"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Testimonial -->
+  {project.data.testimonial && (
+    <section class="testimonial">
+      <div class="container">
+        <blockquote>
+          <p>"{project.data.testimonial.text}"</p>
+          <cite>
+            <strong>{project.data.testimonial.author}</strong>
+            {project.data.testimonial.company && (
+              <span>, {project.data.testimonial.company}</span>
+            )}
+          </cite>
+        </blockquote>
+      </div>
+    </section>
+  )}
+
+  <!-- Related Projects -->
+  {relatedProjects.length > 0 && (
+    <section class="related-projects">
+      <div class="container">
+        <h3>Related Projects</h3>
+        <div class="related-grid">
+          {relatedProjects.map(related => (
+            <a href={`/projects/${related.slug}/`} class="related-card">
+              <img 
+                src={`/images/projects/${related.slug}/${related.data.heroImage}`}
+                alt={related.data.title}
+                loading="lazy"
+              />
+              <div class="related-content">
+                <h4>{related.data.title}</h4>
+                <p>{related.data.description}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</article>
+
+</Layout>
+
+<style>
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+  
+  .project-hero {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 2rem 0 4rem;
+  }
+  
+  .hero-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+  }
+  
+  .breadcrumb {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+  
+  .breadcrumb a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  
+  .breadcrumb a:hover {
+    text-decoration: underline;
+  }
+  
+  .project-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .category {
+    background: var(--accent);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .date {
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
+  
+  .project-hero h1 {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+  }
+  
+  .project-description {
+    font-size: 1.2rem;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+  
+  .project-tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .tag {
+    background: white;
+    color: var(--primary);
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+  }
+  
+  .hero-image img {
+    width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+  }
+  
+  .quick-info {
+    padding: 3rem 0;
+    background: white;
+  }
+  
+  .info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+  
+  .info-card {
+    background: #f8f9fa;
+    padding: 2rem;
+    border-radius: 12px;
+    border-left: 4px solid var(--accent);
+  }
+  
+  .info-card h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .info-card p {
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+  
+  .project-content {
+    padding: 4rem 0;
+  }
+  
+  .content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 4rem;
+  }
+  
+  .main-content {
+    font-size: 1.1rem;
+    line-height: 1.8;
+  }
+  
+  .main-content h2 {
+    color: var(--primary);
+    font-size: 1.8rem;
+    margin: 2rem 0 1rem;
+  }
+  
+  .main-content h3 {
+    color: var(--primary);
+    font-size: 1.4rem;
+    margin: 1.5rem 0 0.75rem;
+  }
+  
+  .main-content p {
+    margin-bottom: 1.2rem;
+    color: var(--text);
+  }
+  
+  .main-content ul, .main-content ol {
+    margin-bottom: 1.2rem;
+    padding-left: 2rem;
+  }
+  
+  .main-content li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .sidebar-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .sidebar-card h4 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  .tech-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .tech-item {
+    background: #f0f8ff;
+    color: var(--accent);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .spec-list {
+    display: grid;
+    gap: 0.75rem;
+  }
+  
+  .spec-list dt {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.9rem;
+  }
+  
+  .spec-list dd {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-left: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .cta-card {
+    background: linear-gradient(135deg, var(--accent), #0052a3);
+    color: white;
+    text-align: center;
+  }
+  
+  .cta-card h4 {
+    color: white;
+  }
+  
+  .cta-card p {
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 1.5rem;
+  }
+  
+  .btn-primary {
+    background: white;
+    color: var(--accent);
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+    display: inline-block;
+  }
+  
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  
+  .project-gallery {
+    padding: 4rem 0;
+    background: #fafbfc;
+  }
+  
+  .project-gallery h3 {
+    text-align: center;
+    color: var(--primary);
+    font-size: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .gallery-item {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+  }
+  
+  .gallery-item:hover {
+    transform: translateY(-4px);
+  }
+  
+  .gallery-item img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+  }
+  
+  .testimonial {
+    padding: 4rem 0;
+    background: var(--primary);
+    color: white;
+    text-align: center;
+  }
+  
+  .testimonial blockquote {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .testimonial p {
+    font-size: 1.3rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    font-style: italic;
+  }
+  
+  .testimonial cite {
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+  
+  .related-projects {
+    padding: 4rem 0;
+  }
+  
+  .related-projects h3 {
+    text-align: center;
+    color: var(--primary);
+    font-size: 2rem;
+    margin-bottom: 3rem;
+  }
+  
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+  }
+  
+  .related-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s;
+    border: 1px solid var(--border);
+  }
+  
+  .related-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+  }
+  
+  .related-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+  
+  .related-content {
+    padding: 1.5rem;
+  }
+  
+  .related-content h4 {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+  
+  .related-content p {
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+  
+  @media (max-width: 768px) {
+    .hero-container {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    
+    .project-hero h1 {
+      font-size: 2rem;
+    }
+    
+    .content-grid {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    
+    .info-cards {
+      grid-template-columns: 1fr;
+    }
+    
+    .gallery-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
