@@ -11,6 +11,16 @@ const featuredProjects = sortedProjects.filter(project => project.data.featured)
 const otherProjects = sortedProjects.filter(project => !project.data.featured);
 
 const categories = [...new Set(allProjects.map(project => project.data.category))];
+
+// Function to get thumbnail image (image-00.jpg) for each project
+function getThumbnailImage(slug: string) {
+  return `/images/projects/${slug}/image-00.jpg`;
+}
+
+// Function to check if project has additional images (image-01.jpg, image-02.jpg, etc.)
+function hasAdditionalImages(project: any) {
+  return project.data.images && project.data.images.length > 0;
+}
 ---
 
 <Layout 
@@ -47,11 +57,18 @@ const categories = [...new Set(allProjects.map(project => project.data.category)
           <article class="project-card featured-card" data-category={project.data.category.toLowerCase().replace(/\s+/g, '-')}>
             <div class="project-image">
               <img 
-                src={`/images/projects/${project.slug}/${project.data.heroImage}`} 
+                src={getThumbnailImage(project.slug)}
                 alt={project.data.title}
                 loading="lazy"
+                onerror="this.src='/images/projects/placeholder.jpg'"
               />
               <div class="project-overlay">
+                {hasAdditionalImages(project) && (
+                  <div class="image-count">
+                    <span class="gallery-icon">🖼️</span>
+                    <span>{(project.data.images?.length || 0) + 1} images</span>
+                  </div>
+                )}
                 <div class="project-tags">
                   {project.data.tags.slice(0, 3).map(tag => (
                     <span class="tag">{tag}</span>
@@ -94,10 +111,19 @@ const categories = [...new Set(allProjects.map(project => project.data.category)
         <article class="project-card" data-category={project.data.category.toLowerCase().replace(/\s+/g, '-')}>
           <div class="project-image">
             <img 
-              src={`/images/projects/${project.slug}/${project.data.heroImage}`} 
+              src={getThumbnailImage(project.slug)}
               alt={project.data.title}
               loading="lazy"
+              onerror="this.src='/images/projects/placeholder.jpg'"
             />
+            <div class="project-overlay">
+              {hasAdditionalImages(project) && (
+                <div class="image-count">
+                  <span class="gallery-icon">📷</span>
+                  <span>{(project.data.images?.length || 0) + 1}</span>
+                </div>
+              )}
+            </div>
           </div>
           <div class="project-content">
             <div class="project-meta">
@@ -265,16 +291,37 @@ const categories = [...new Set(allProjects.map(project => project.data.category)
     right: 1rem;
     opacity: 0;
     transition: opacity 0.3s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
   }
   
   .project-card:hover .project-overlay {
     opacity: 1;
   }
   
+  .image-count {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 0.3rem 0.7rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+  
+  .gallery-icon {
+    font-size: 0.9rem;
+  }
+  
   .project-tags {
     display: flex;
     gap: 0.5rem;
     flex-wrap: wrap;
+    flex-direction: column;
   }
   
   .tag {
@@ -401,6 +448,26 @@ const categories = [...new Set(allProjects.map(project => project.data.category)
       flex-direction: column;
       align-items: flex-start;
       gap: 0.75rem;
+    }
+    
+    .project-overlay {
+      position: static;
+      opacity: 1;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      padding: 0.5rem;
+      margin: 0.5rem;
+      border-radius: 8px;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+    
+    .project-tags {
+      flex-direction: row;
+    }
+    
+    .image-count {
+      background: rgba(255,255,255,0.2);
     }
   }
 </style>
