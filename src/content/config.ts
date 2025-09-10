@@ -8,8 +8,7 @@ const projects = defineCollection({
     featured: z.boolean().default(false),
     category: z.string(),
     tags: z.array(z.string()),
-    heroImage: z.string(),
-    images: z.array(z.string()).optional(),
+    heroImage: z.string().optional().default("image-00.jpg"), // Optional, defaults to image-00.jpg
     client: z.string().optional(),
     challenge: z.string().optional(),
     solution: z.string().optional(),

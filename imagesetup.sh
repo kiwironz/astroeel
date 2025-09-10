@@ -38,7 +38,7 @@ create_project_dir() {
     echo "   │   └── 🖼️  ..."
     
     # Create sample structure files (you'll replace these with real images)
-    for i in {0..3}; do
+    for i in {0..20}; do
         padded=$(printf "%02d" $i)
         touch "$PROJECT_DIR/image-$padded.jpg"
     done

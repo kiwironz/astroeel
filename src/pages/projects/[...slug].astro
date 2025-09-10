@@ -1,249 +1,125 @@
 ---
-import Layout from '../../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { Image } from 'astro:assets';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
-  return projects.map((project) => ({
-    params: { slug: project.slug },
-    props: project,
-  }));
+  const imageModules = import.meta.glob('../../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
+  const paths = projects.map(project => {
+    const imageKeys = Object.keys(imageModules)
+      .filter(key => key.includes(`/${project.slug}/image-`))
+      .sort((a, b) => {
+        const numA = parseInt(a.match(/image-(\d+)/)?.[1] || 0);
+        const numB = parseInt(b.match(/image-(\d+)/)?.[1] || 0);
+        return numA - numB;
+      });
+    const imageUrls = imageKeys.map(key => imageModules[key].default);
+    // Safe find for hero
+    const hero = imageUrls.find(url => typeof url === 'string' && url.includes('image-00')) || '/images/projects/placeholder.jpg';
+    return {
+      params: { slug: project.slug },
+      props: { 
+        project, 
+        images: imageUrls,
+        heroImage: hero
+      }
+    };
+  });
+  return paths;
 }
 
-const project = Astro.props;
-const { Content } = await project.render();
-
-const relatedProjects = (await getCollection('projects'))
-  .filter(p => p.slug !== project.slug && p.data.category === project.data.category)
-  .slice(0, 2);
-
-// Auto-generate image list based on naming convention
-// Start with image-00.jpg (thumbnail/hero), then add additional images
-function generateImageList(projectSlug: string, additionalImages?: string[]) {
-  const images = [`image-00.jpg`]; // Always start with thumbnail
-  
-  if (additionalImages && additionalImages.length > 0) {
-    images.push(...additionalImages);
-  } else {
-    // If no specific images listed, try common numbered sequence
-    // This is a fallback - in real implementation you might scan directory
-    for (let i = 1; i <= 10; i++) {
-      const paddedNumber = i.toString().padStart(2, '0');
-      images.push(`image-${paddedNumber}.jpg`);
-    }
-  }
-  
-  return images.map(img => `/images/projects/${projectSlug}/${img}`);
-}
-
-const projectImages = generateImageList(project.slug, project.data.images);
+const { project, images, heroImage } = Astro.props;
 ---
 
 <Layout 
-  title={`${project.data.title} - Custom Electronics Project`}
+  title={`${project.data.title} - Embedtronics Project`}
   description={project.data.description}
-  keywords={`${project.data.tags.join(', ')}, custom electronics, ${project.data.category}`}
-  ogImage={`/images/projects/${project.slug}/image-00.jpg`}>
-
-<article class="project-detail">
-  <!-- Hero Section -->
+  keywords={project.data.tags.join(', ')}
+>
   <section class="project-hero">
-    <div class="hero-container">
-      <div class="hero-content">
-        <nav class="breadcrumb">
-          <a href="/">Home</a>
-          <span>›</span>
-          <a href="/projects">Projects</a>
-          <span>›</span>
-          <span>{project.data.title}</span>
-        </nav>
-        
-        <div class="project-meta">
-          <span class="category">{project.data.category}</span>
-          <span class="date">{new Date(project.data.date).toLocaleDateString()}</span>
-        </div>
-        
-        <h1>{project.data.title}</h1>
-        <p class="project-description">{project.data.description}</p>
-        
-        <div class="project-tags">
-          {project.data.tags.map(tag => (
-            <span class="tag">{tag}</span>
-          ))}
-        </div>
-      </div>
-      
-      <div class="hero-image">
-        <img 
-          src={`/images/projects/${project.slug}/image-00.jpg`}
-          alt={project.data.title}
-          onerror="this.src='/images/projects/placeholder.jpg'"
-        />
+    <div class="container">
+      <Image 
+        src={heroImage}
+        alt={project.data.title}
+        width={600}
+        height={450}
+        class="hero-image"
+      />
+      <h1>{project.data.title}</h1>
+      <p>{project.data.description}</p>
+      <div class="project-tags">
+        {project.data.tags.map(tag => <span class="tag">{tag}</span>)}
       </div>
     </div>
   </section>
 
-  <!-- Quick Info Cards -->
-  {(project.data.challenge || project.data.solution || project.data.client) && (
-    <section class="quick-info">
-      <div class="container">
-        <div class="info-cards">
-          {project.data.challenge && (
-            <div class="info-card">
-              <h3>🎯 Challenge</h3>
-              <p>{project.data.challenge}</p>
-            </div>
-          )}
-          {project.data.solution && (
-            <div class="info-card">
-              <h3>💡 Solution</h3>
-              <p>{project.data.solution}</p>
-            </div>
-          )}
-          {project.data.client && (
-            <div class="info-card">
-              <h3>👥 Client</h3>
-              <p>{project.data.client}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-  )}
-
-  <!-- Main Content -->
   <section class="project-content">
     <div class="container">
-      <div class="content-grid">
-        <div class="main-content">
-          <Content />
+      {project.data.challenge && (
+        <div class="info-card">
+          <h3>Challenge</h3>
+          <p>{project.data.challenge}</p>
         </div>
-        
-        <aside class="project-sidebar">
-          <!-- Technologies -->
-          <div class="sidebar-card">
-            <h4>Technologies Used</h4>
-            <div class="tech-list">
-              {project.data.technologies.map(tech => (
-                <span class="tech-item">{tech}</span>
-              ))}
-            </div>
-          </div>
-          
-          <!-- Specifications -->
-          {project.data.specifications && (
-            <div class="sidebar-card">
-              <h4>Specifications</h4>
-              <dl class="spec-list">
-                {project.data.specifications.power && (
-                  <>
-                    <dt>Power</dt>
-                    <dd>{project.data.specifications.power}</dd>
-                  </>
-                )}
-                {project.data.specifications.range && (
-                  <>
-                    <dt>Range</dt>
-                    <dd>{project.data.specifications.range}</dd>
-                  </>
-                )}
-                {project.data.specifications.battery && (
-                  <>
-                    <dt>Battery Life</dt>
-                    <dd>{project.data.specifications.battery}</dd>
-                  </>
-                )}
-                {project.data.specifications.connectivity && (
-                  <>
-                    <dt>Connectivity</dt>
-                    <dd>{project.data.specifications.connectivity}</dd>
-                  </>
-                )}
-                {project.data.specifications.operating_temp && (
-                  <>
-                    <dt>Operating Temp</dt>
-                    <dd>{project.data.specifications.operating_temp}</dd>
-                  </>
-                )}
-              </dl>
-            </div>
-          )}
-          
-          <!-- Contact CTA -->
-          <div class="sidebar-card cta-card">
-            <h4>Interested in Something Similar?</h4>
-            <p>Every project is unique. Let's discuss your specific requirements.</p>
-            <a href="/contact" class="btn-primary">Start a Conversation</a>
-          </div>
-        </aside>
-      </div>
-    </div>
-  </section>
-
-  <!-- Auto-Generated Image Gallery -->
-  <section class="project-gallery">
-    <div class="container">
-      <h3>Project Gallery</h3>
-      <div class="gallery-grid" id="image-gallery">
-        <!-- Images will be loaded dynamically to handle missing images gracefully -->
-      </div>
-      <div id="gallery-modal" class="gallery-modal">
-        <div class="modal-content">
-          <span class="close-modal">&times;</span>
-          <img id="modal-image" src="" alt="">
-          <div class="modal-nav">
-            <button id="prev-image" class="nav-btn">❮</button>
-            <button id="next-image" class="nav-btn">❯</button>
-          </div>
-          <div id="image-counter" class="image-counter"></div>
+      )}
+      {project.data.solution && (
+        <div class="info-card">
+          <h3>Solution</h3>
+          <p>{project.data.solution}</p>
         </div>
+      )}
+      <div class="info-card">
+        <h3>Technologies</h3>
+        <ul>
+          {project.data.technologies.map(tech => <li>{tech}</li>)}
+        </ul>
       </div>
-    </div>
-  </section>
-
-  <!-- Testimonial -->
-  {project.data.testimonial && (
-    <section class="testimonial">
-      <div class="container">
-        <blockquote>
-          <p>"{project.data.testimonial.text}"</p>
-          <cite>
-            <strong>{project.data.testimonial.author}</strong>
-            {project.data.testimonial.company && (
-              <span>, {project.data.testimonial.company}</span>
+      {project.data.specifications && (
+        <div class="info-card">
+          <h3>Specifications</h3>
+          <dl>
+            {Object.entries(project.data.specifications).map(([key, value]) => 
+              value && (
+                <>
+                  <dt>{key.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</dt>
+                  <dd>{value}</dd>
+                </>
+              )
             )}
-          </cite>
-        </blockquote>
-      </div>
-    </section>
-  )}
+          </dl>
+        </div>
+      )}
+      {project.data.testimonial && (
+        <div class="info-card testimonial">
+          <blockquote>
+            <p>{project.data.testimonial.text}</p>
+            <cite>{project.data.testimonial.author}{project.data.testimonial.company ? `, ${project.data.testimonial.company}` : ''}</cite>
+          </blockquote>
+        </div>
+      )}
+    </div>
+  </section>
 
-  <!-- Related Projects -->
-  {relatedProjects.length > 0 && (
-    <section class="related-projects">
+  {images.length > 0 && (
+    <section class="project-gallery">
       <div class="container">
-        <h3>Related Projects</h3>
-        <div class="related-grid">
-          {relatedProjects.map(related => (
-            <a href={`/projects/${related.slug}/`} class="related-card">
-              <img 
-                src={`/images/projects/${related.slug}/image-00.jpg`}
-                alt={related.data.title}
-                loading="lazy"
-                onerror="this.src='/images/projects/placeholder.jpg'"
+        <h2>Project Gallery</h2>
+        <div class="gallery-grid">
+          {images.map((imageUrl, index) => (
+            <div class="gallery-item">
+              <Image 
+                src={imageUrl}
+                alt={`Project image ${index + 1}`}
+                width={400}
+                height={300}
+                class="gallery-image"
               />
-              <div class="related-content">
-                <h4>{related.data.title}</h4>
-                <p>{related.data.description}</p>
-              </div>
-            </a>
+            </div>
           ))}
         </div>
       </div>
     </section>
   )}
-</article>
-
 </Layout>
 
 <style>
@@ -252,649 +128,104 @@ const projectImages = generateImageList(project.slug, project.data.images);
     margin: 0 auto;
     padding: 0 2rem;
   }
-  
   .project-hero {
+    text-align: center;
+    padding: 3rem 0;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    padding: 2rem 0 4rem;
   }
-  
-  .hero-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
-    align-items: center;
+  .hero-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
-  
-  .breadcrumb {
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-    color: var(--text-light);
-  }
-  
-  .breadcrumb a {
-    color: var(--accent);
-    text-decoration: none;
-  }
-  
-  .breadcrumb a:hover {
-    text-decoration: underline;
-  }
-  
-  .project-meta {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-bottom: 1rem;
-  }
-  
-  .category {
-    background: var(--accent);
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 500;
-  }
-  
-  .date {
-    color: var(--text-light);
-    font-size: 0.9rem;
-  }
-  
   .project-hero h1 {
     font-size: 2.5rem;
     color: var(--primary);
-    margin-bottom: 1rem;
-    line-height: 1.2;
+    margin: 1rem 0;
   }
-  
-  .project-description {
+  .project-hero p {
     font-size: 1.2rem;
     color: var(--text-light);
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
   }
-  
   .project-tags {
     display: flex;
     gap: 0.5rem;
+    justify-content: center;
     flex-wrap: wrap;
+    margin-top: 1rem;
   }
-  
   .tag {
-    background: white;
-    color: var(--primary);
-    padding: 0.4rem 1rem;
+    background: var(--accent);
+    color: white;
+    padding: 0.3rem 0.8rem;
     border-radius: 20px;
     font-size: 0.85rem;
-    font-weight: 500;
-    border: 1px solid var(--border);
   }
-  
-  .hero-image img {
-    width: 100%;
-    border-radius: 12px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-  }
-  
-  .quick-info {
+  .project-content {
     padding: 3rem 0;
-    background: white;
   }
-  
-  .info-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-  }
-  
   .info-card {
-    background: #f8f9fa;
+    background: white;
     padding: 2rem;
     border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     border-left: 4px solid var(--accent);
   }
-  
   .info-card h3 {
     color: var(--primary);
     margin-bottom: 1rem;
-    font-size: 1.1rem;
   }
-  
-  .info-card p {
+  .info-card ul, .info-card dl {
     color: var(--text-light);
-    line-height: 1.6;
   }
-  
-  .project-content {
-    padding: 4rem 0;
-  }
-  
-  .content-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 4rem;
-  }
-  
-  .main-content {
-    font-size: 1.1rem;
-    line-height: 1.8;
-  }
-  
-  .main-content h2 {
-    color: var(--primary);
-    font-size: 1.8rem;
-    margin: 2rem 0 1rem;
-  }
-  
-  .main-content h3 {
-    color: var(--primary);
-    font-size: 1.4rem;
-    margin: 1.5rem 0 0.75rem;
-  }
-  
-  .main-content p {
-    margin-bottom: 1.2rem;
-    color: var(--text);
-  }
-  
-  .main-content ul, .main-content ol {
-    margin-bottom: 1.2rem;
-    padding-left: 2rem;
-  }
-  
-  .main-content li {
+  .info-card li, .info-card dd {
     margin-bottom: 0.5rem;
   }
-  
-  .sidebar-card {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+  .testimonial blockquote {
+    font-style: italic;
+    border-left: 4px solid var(--accent);
+    padding-left: 1rem;
+    margin: 0;
   }
-  
-  .sidebar-card h4 {
+  .testimonial cite {
+    display: block;
+    margin-top: 1rem;
+    font-weight: bold;
     color: var(--primary);
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
   }
-  
-  .tech-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .tech-item {
-    background: #f0f8ff;
-    color: var(--accent);
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 500;
-  }
-  
-  .spec-list {
-    display: grid;
-    gap: 0.75rem;
-  }
-  
-  .spec-list dt {
-    font-weight: 600;
-    color: var(--primary);
-    font-size: 0.9rem;
-  }
-  
-  .spec-list dd {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    margin-left: 0;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  
-  .cta-card {
-    background: linear-gradient(135deg, var(--accent), #0052a3);
-    color: white;
-    text-align: center;
-  }
-  
-  .cta-card h4 {
-    color: white;
-  }
-  
-  .cta-card p {
-    color: rgba(255,255,255,0.9);
-    margin-bottom: 1.5rem;
-  }
-  
-  .btn-primary {
-    background: white;
-    color: var(--accent);
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s;
-    display: inline-block;
-  }
-  
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  }
-  
   .project-gallery {
-    padding: 4rem 0;
+    padding: 3rem 0;
     background: #fafbfc;
   }
-  
-  .project-gallery h3 {
-    text-align: center;
-    color: var(--primary);
-    font-size: 2rem;
-    margin-bottom: 3rem;
-  }
-  
   .gallery-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
   }
-  
   .gallery-item {
-    border-radius: 12px;
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transition: transform 0.3s;
-    cursor: pointer;
-    position: relative;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
-  
-  .gallery-item:hover {
-    transform: translateY(-4px);
-  }
-  
-  .gallery-item img {
+  .gallery-image {
     width: 100%;
-    height: 250px;
-    object-fit: cover;
+    height: auto;
+    aspect-ratio: 4/3;
+    object-fit: contain;
     transition: transform 0.3s;
   }
-  
-  .gallery-item:hover img {
+  .gallery-item:hover .gallery-image {
     transform: scale(1.05);
   }
-  
-  .gallery-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s;
-    color: white;
-    font-size: 2rem;
-  }
-  
-  .gallery-item:hover .gallery-overlay {
-    opacity: 1;
-  }
-  
-  /* Modal Styles */
-  .gallery-modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.9);
-    backdrop-filter: blur(5px);
-  }
-  
-  .modal-content {
-    position: relative;
-    margin: auto;
-    padding: 20px;
-    width: 90%;
-    max-width: 1200px;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .close-modal {
-    position: absolute;
-    top: 20px;
-    right: 35px;
-    color: #f1f1f1;
-    font-size: 40px;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 1001;
-  }
-  
-  .close-modal:hover {
-    color: #999;
-  }
-  
-  #modal-image {
-    max-width: 90%;
-    max-height: 80%;
-    object-fit: contain;
-    border-radius: 8px;
-  }
-  
-  .modal-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    padding: 0 2rem;
-    pointer-events: none;
-  }
-  
-  .nav-btn {
-    background: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
-    padding: 1rem 1.5rem;
-    font-size: 1.5rem;
-    cursor: pointer;
-    border-radius: 50%;
-    transition: all 0.3s;
-    pointer-events: auto;
-  }
-  
-  .nav-btn:hover {
-    background: rgba(0,0,0,0.8);
-    transform: scale(1.1);
-  }
-  
-  .image-counter {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
-    font-size: 1rem;
-    background: rgba(0,0,0,0.5);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-  }
-  
-  .testimonial {
-    padding: 4rem 0;
-    background: var(--primary);
-    color: white;
-    text-align: center;
-  }
-  
-  .testimonial blockquote {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .testimonial p {
-    font-size: 1.3rem;
-    line-height: 1.8;
-    margin-bottom: 2rem;
-    font-style: italic;
-  }
-  
-  .testimonial cite {
-    font-size: 1rem;
-    opacity: 0.9;
-  }
-  
-  .related-projects {
-    padding: 4rem 0;
-  }
-  
-  .related-projects h3 {
-    text-align: center;
-    color: var(--primary);
-    font-size: 2rem;
-    margin-bottom: 3rem;
-  }
-  
-  .related-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: 2rem;
-  }
-  
-  .related-card {
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.3s;
-    border: 1px solid var(--border);
-  }
-  
-  .related-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-  }
-  
-  .related-card img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-  }
-  
-  .related-content {
-    padding: 1.5rem;
-  }
-  
-  .related-content h4 {
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-    font-size: 1.2rem;
-  }
-  
-  .related-content p {
-    color: var(--text-light);
-    line-height: 1.6;
-  }
-  
   @media (max-width: 768px) {
-    .hero-container {
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-    
-    .project-hero h1 {
-      font-size: 2rem;
-    }
-    
-    .content-grid {
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-    
-    .info-cards {
-      grid-template-columns: 1fr;
-    }
-    
     .gallery-grid {
       grid-template-columns: 1fr;
     }
-    
-    .related-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    .modal-content {
-      padding: 10px;
-    }
-    
-    .modal-nav {
-      padding: 0 1rem;
-    }
-    
-    .nav-btn {
-      padding: 0.75rem 1rem;
-      font-size: 1.2rem;
+    .hero-image {
+      max-height: 300px;
     }
   }
 </style>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const projectSlug = window.location.pathname.split('/')[2];
-    const galleryContainer = document.getElementById('image-gallery');
-    const modal = document.getElementById('gallery-modal');
-    const modalImage = document.getElementById('modal-image');
-    const closeModal = document.querySelector('.close-modal');
-    const prevBtn = document.getElementById('prev-image');
-    const nextBtn = document.getElementById('next-image');
-    const counter = document.getElementById('image-counter');
-    
-    let validImages = [];
-    let currentImageIndex = 0;
-    
-    // Function to check if image exists and load it
-    function checkAndLoadImage(imagePath, index) {
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = function() {
-          resolve({ path: imagePath, index: index, exists: true });
-        };
-        img.onerror = function() {
-          resolve({ path: imagePath, index: index, exists: false });
-        };
-        img.src = imagePath;
-      });
-    }
-    
-    // Generate potential image paths
-    function generateImagePaths(slug) {
-      const paths = [];
-      // Always try image-00.jpg first (thumbnail)
-      paths.push(`/images/projects/${slug}/image-00.jpg`);
-      
-      // Then try numbered sequence up to 20 images
-      for (let i = 1; i <= 20; i++) {
-        const paddedNumber = i.toString().padStart(2, '0');
-        paths.push(`/images/projects/${slug}/image-${paddedNumber}.jpg`);
-      }
-      
-      return paths;
-    }
-    
-    // Load gallery images
-    async function loadGallery() {
-      const imagePaths = generateImagePaths(projectSlug);
-      const imageChecks = imagePaths.map((path, index) => checkAndLoadImage(path, index));
-      
-      try {
-        const results = await Promise.all(imageChecks);
-        validImages = results.filter(result => result.exists);
-        
-        if (validImages.length === 0) {
-          galleryContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">No images available for this project.</p>';
-          return;
-        }
-        
-        // Create gallery items
-        validImages.forEach((imageData, index) => {
-          const galleryItem = document.createElement('div');
-          galleryItem.className = 'gallery-item';
-          galleryItem.innerHTML = `
-            <img src="${imageData.path}" alt="Project image ${index + 1}" loading="lazy">
-            <div class="gallery-overlay">🔍</div>
-          `;
-          
-          galleryItem.addEventListener('click', () => openModal(index));
-          galleryContainer.appendChild(galleryItem);
-        });
-        
-      } catch (error) {
-        console.error('Error loading gallery:', error);
-        galleryContainer.innerHTML = '<p style="text-align: center; color: var(--text-light);">Error loading gallery images.</p>';
-      }
-    }
-    
-    // Modal functions
-    function openModal(index) {
-      currentImageIndex = index;
-      updateModalImage();
-      modal.style.display = 'block';
-      document.body.style.overflow = 'hidden';
-    }
-    
-    function closeModalFunc() {
-      modal.style.display = 'none';
-      document.body.style.overflow = 'auto';
-    }
-    
-    function updateModalImage() {
-      if (validImages[currentImageIndex]) {
-        modalImage.src = validImages[currentImageIndex].path;
-        counter.textContent = `${currentImageIndex + 1} / ${validImages.length}`;
-      }
-    }
-    
-    function showPrevImage() {
-      currentImageIndex = (currentImageIndex - 1 + validImages.length) % validImages.length;
-      updateModalImage();
-    }
-    
-    function showNextImage() {
-      currentImageIndex = (currentImageIndex + 1) % validImages.length;
-      updateModalImage();
-    }
-    
-    // Event listeners
-    closeModal.addEventListener('click', closeModalFunc);
-    prevBtn.addEventListener('click', showPrevImage);
-    nextBtn.addEventListener('click', showNextImage);
-    
-    // Close modal when clicking outside image
-    modal.addEventListener('click', function(e) {
-      if (e.target === modal) {
-        closeModalFunc();
-      }
-    });
-    
-    // Keyboard navigation
-    document.addEventListener('keydown', function(e) {
-      if (modal.style.display === 'block') {
-        switch(e.key) {
-          case 'Escape':
-            closeModalFunc();
-            break;
-          case 'ArrowLeft':
-            showPrevImage();
-            break;
-          case 'ArrowRight':
-            showNextImage();
-            break;
-        }
-      }
-    });
-    
-    // Initialize gallery
-    loadGallery();
-  });
-</script>

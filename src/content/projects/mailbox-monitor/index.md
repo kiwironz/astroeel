@@ -6,7 +6,6 @@ featured: true
 category: "IoT Monitoring"
 tags: ["LoRaWAN", "Battery Optimized", "3D Printed", "Reed Switch", "Alexa Integration", "Email Notifications"]
 heroImage: "image-00.jpg"
-images: ["image-01.jpg", "image-02.jpg", "image-03.jpg"]
 client: "Rural Property Owner"
 challenge: "Homeowner needed to know when mail arrived at a mailbox located 500m down a long rural driveway, without running power or wiring."
 solution: "Designed a battery-powered LoRaWAN sensor using a reed switch that triggers only when the mailbox door opens, achieving years of battery life while providing instant notifications."

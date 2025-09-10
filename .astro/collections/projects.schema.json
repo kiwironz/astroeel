@@ -27,13 +27,8 @@
           }
         },
         "heroImage": {
-          "type": "string"
-        },
-        "images": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
+          "type": "string",
+          "default": "image-00.jpg"
         },
         "client": {
           "type": "string"
@@ -103,7 +98,6 @@
         "date",
         "category",
         "tags",
-        "heroImage",
         "technologies"
       ],
       "additionalProperties": false
