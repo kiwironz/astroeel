@@ -6,28 +6,26 @@ import { Image } from 'astro:assets';
 const projects = await getCollection('projects');
 const recentProjects = projects.slice(0, 2);
 
-const imageModules = import.meta.glob('../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
+// Remove { eager: true } - this was causing the issue
+const imageModules = import.meta.glob('../content/projects/**/*.{jpg,jpeg,png,webp}');
 
-// Get placeholder - we know this exists from the debug
-const placeholderKey = '../content/projects/placeholder.jpg';
-const placeholderImage = imageModules[placeholderKey];
+// Find placeholder and project images
+const allKeys = Object.keys(imageModules);
+const placeholderKey = allKeys.find(key => key.endsWith('/placeholder.jpg'));
+const placeholderImage = placeholderKey ? imageModules[placeholderKey] : null;
 
 async function getProjectImage(slug: string) {
-  const imageKey = `../content/projects/${slug}/image-00.jpg`;
+  const imageKey = allKeys.find(key => 
+    key.includes(`/${slug}/image-00.jpg`)
+  );
   
-  // Return the exact module object, no processing
-  return imageModules[imageKey] || placeholderImage;
+  return imageKey ? imageModules[imageKey] : placeholderImage;
 }
 
 const recentWithImages = await Promise.all(recentProjects.map(async project => ({
   ...project,
   image: await getProjectImage(project.slug)
 })));
-
-// Debug what we're actually passing to templates
-console.log('placeholderImage type:', typeof placeholderImage);
-console.log('placeholderImage:', placeholderImage);
-console.log('First project image:', recentWithImages[0]?.image);
 ---
 
 <Layout 
@@ -60,11 +58,18 @@ console.log('First project image:', recentWithImages[0]?.image);
       </div>
     </div>
     <div class="hero-image">
-      <div>
-        <p>Placeholder type: {typeof placeholderImage}</p>
-        <p>Placeholder exists: {!!placeholderImage}</p>
-        <p>Placeholder default exists: {!!(placeholderImage?.default)}</p>
-      </div>
+      {placeholderImage ? (
+        <Image 
+          src={placeholderImage()}
+          alt="Custom electronic device with sensors and LoRaWAN capability"
+          width={500}
+          height={375}
+        />
+      ) : (
+        <div style="width: 500px; height: 375px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+          No image available
+        </div>
+      )}
     </div>
   </div>
 </section>
@@ -105,23 +110,29 @@ console.log('First project image:', recentWithImages[0]?.image);
   <div class="container">
     <h2>Recent Projects</h2>
     <div class="projects-grid">
-    {recentWithImages.map(project => (
-      <div class="project-card">
-        <div>
-          <p>Project: {project.slug}</p>
-          <p>Image type: {typeof project.image}</p>
-          <p>Image exists: {!!project.image}</p>
-          <p>Image default exists: {!!(project.image?.default)}</p>
-        </div>
-        <div class="project-content">
-          <h3>{project.data.title}</h3>
-          <p>{project.data.description}</p>
-          <div class="project-tags">
-            {project.data.tags.slice(0, 3).map(tag => <span>{tag}</span>)}
+      {recentWithImages.map(project => (
+        <div class="project-card">
+          {project.image ? (
+            <Image 
+              src={project.image()}
+              alt={project.data.title}
+              width={400}
+              height={300}
+            />
+          ) : (
+            <div style="width: 400px; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+              No image
+            </div>
+          )}
+          <div class="project-content">
+            <h3>{project.data.title}</h3>
+            <p>{project.data.description}</p>
+            <div class="project-tags">
+              {project.data.tags.slice(0, 3).map(tag => <span>{tag}</span>)}
+            </div>
           </div>
         </div>
-      </div>
-    ))}
+      ))}
     </div>
     <div class="projects-cta">
       <a href="/projects" class="btn-primary">View All Projects</a>

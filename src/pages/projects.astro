@@ -1,9 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
-import Layout from '../../layouts/Layout.astro';
+import Layout from '../layouts/Layout.astro';
 import { Image } from 'astro:assets';
-// Import placeholder
-import placeholderImage from '../content/projects/placeholder.jpg';
 
 const allProjects = await getCollection('projects');
 const sortedProjects = allProjects.sort((a, b) => 
@@ -15,11 +13,12 @@ const otherProjects = sortedProjects.filter(project => !project.data.featured);
 
 const categories = [...new Set(allProjects.map(project => project.data.category))];
 
-// Static glob for all project images
-const imageModules = import.meta.glob('../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
+// Remove { eager: true } - this was causing the issue
+const imageModules = import.meta.glob('../content/projects/**/*.{jpg,jpeg,png,webp}');
 
 async function getThumbnailImage(project: { slug: string; id: string }) {
-  const imageKeys = Object.keys(imageModules)
+  const allKeys = Object.keys(imageModules);
+  const imageKeys = allKeys
     .filter(key => key.includes(`/${project.slug}/image-`))
     .sort((a, b) => {
       const numA = parseInt(a.match(/image-(\d+)/)?.[1] || 0);
@@ -30,14 +29,12 @@ async function getThumbnailImage(project: { slug: string; id: string }) {
   // Look for image-00 first, then any other image
   const imageKey = imageKeys.find(key => key.includes('image-00')) || imageKeys[0];
   
-  if (imageKey && imageModules[imageKey]?.default) {
+  if (imageKey && imageModules[imageKey]) {
     return imageModules[imageKey];
   }
   
   // Return placeholder from the glob
-  const placeholderKey = Object.keys(imageModules).find(key => 
-    key.includes('/placeholder.jpg')
-  );
+  const placeholderKey = allKeys.find(key => key.includes('/placeholder.jpg'));
   return placeholderKey ? imageModules[placeholderKey] : null;
 }
 
@@ -86,13 +83,19 @@ const otherWithThumb = otherProjects.map(p => projectThumbnails.find(pt => pt.sl
         {featuredWithThumb.map(project => (
           <article class="project-card featured-card" data-category={project.data.category.toLowerCase().replace(/\s+/g, '-')}>
             <div class="project-image">
-              <Image 
-                src={project.thumbnail}
-                alt={project.data.title}
-                width={400}
-                height={300}
-                loading="lazy"
-              />
+              {project.thumbnail ? (
+                <Image 
+                  src={project.thumbnail()}
+                  alt={project.data.title}
+                  width={400}
+                  height={300}
+                  loading="lazy"
+                />
+              ) : (
+                <div style="width: 400px; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                  No image
+                </div>
+              )}
               <div class="project-overlay">
                 <div class="image-count"><span class="gallery-icon">🖼️</span><span>Gallery</span></div>
                 <div class="project-tags">
@@ -136,13 +139,19 @@ const otherWithThumb = otherProjects.map(p => projectThumbnails.find(pt => pt.sl
       {otherWithThumb.map(project => (
         <article class="project-card" data-category={project.data.category.toLowerCase().replace(/\s+/g, '-')}>
           <div class="project-image">
-            <Image 
-              src={project.thumbnail}
-              alt={project.data.title}
-              width={400}
-              height={300}
-              loading="lazy"
-            />
+            {project.thumbnail ? (
+              <Image 
+                src={project.thumbnail()}
+                alt={project.data.title}
+                width={400}
+                height={300}
+                loading="lazy"
+              />
+            ) : (
+              <div style="width: 400px; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                No image
+              </div>
+            )}
             <div class="project-overlay">
               <div class="image-count"><span class="gallery-icon">🖼️</span><span>Gallery</span></div>
             </div>

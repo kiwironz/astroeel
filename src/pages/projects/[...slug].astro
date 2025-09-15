@@ -5,17 +5,17 @@ import { Image } from 'astro:assets';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
-  const imageModules = import.meta.glob('../../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
+  // Remove { eager: true } - this was causing the issue
+  const imageModules = import.meta.glob('../../content/projects/**/*.{jpg,jpeg,png,webp}');
   
   // Find placeholder in the glob
-  const placeholderKey = Object.keys(imageModules).find(key => 
-    key.includes('/placeholder.jpg')
-  );
+  const allKeys = Object.keys(imageModules);
+  const placeholderKey = allKeys.find(key => key.includes('/placeholder.jpg'));
   const placeholderModule = placeholderKey ? imageModules[placeholderKey] : null;
   
   const paths = projects.map(project => {
     // Find all images for this project
-    const imageKeys = Object.keys(imageModules)
+    const imageKeys = allKeys
       .filter(key => key.includes(`/${project.slug}/image-`))
       .sort((a, b) => {
         const numA = parseInt(a.match(/image-(\d+)/)?.[1] || 0);
@@ -23,19 +23,21 @@ export async function getStaticPaths() {
         return numA - numB;
       });
 
-    // Get image modules, filtering out any undefined ones
+    // Get image modules (they are functions now, not objects)
     const imageUrls = imageKeys
       .map(key => imageModules[key])
-      .filter(module => module && module.default);
+      .filter(module => module);
 
     // Set hero image - prefer image-00, fallback to first available, then placeholder
     let hero = placeholderModule;
     if (imageUrls.length > 0) {
-      const heroImageModule = imageUrls.find(url => 
-        url.default.src.includes('image-00')
-      ) || imageUrls[0];
+      const heroImageModule = imageKeys.find(key => 
+        key.includes('image-00')
+      );
       if (heroImageModule) {
-        hero = heroImageModule;
+        hero = imageModules[heroImageModule];
+      } else if (imageUrls[0]) {
+        hero = imageUrls[0];
       }
     }
 
@@ -61,13 +63,19 @@ const { project, images, heroImage } = Astro.props;
 >
   <section class="project-hero">
     <div class="container">
-      <Image 
-        src={heroImage}
-        alt={project.data.title}
-        width={800}
-        height={600}
-        class="hero-image"
-      />
+      {heroImage ? (
+        <Image 
+          src={heroImage()}
+          alt={project.data.title}
+          width={800}
+          height={600}
+          class="hero-image"
+        />
+      ) : (
+        <div style="width: 800px; height: 600px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+          No image available
+        </div>
+      )}
       <h1>{project.data.title}</h1>
       <p>{project.data.description}</p>
       <div class="project-tags">
@@ -130,7 +138,7 @@ const { project, images, heroImage } = Astro.props;
           {images.map((imageUrl, index) => (
             <div class="gallery-item">
               <Image 
-                src={imageUrl}
+                src={imageUrl()}
                 alt={`Project image ${index + 1}`}
                 width={400}
                 height={300}
@@ -156,14 +164,14 @@ const { project, images, heroImage } = Astro.props;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   }
   .hero-image {
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 800px;
-      height: auto;
-      object-fit: cover;
-      aspect-ratio: 4/3;
-    }
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    object-fit: cover;
+    aspect-ratio: 4/3;
+  }
   .project-hero h1 {
     font-size: 2.5rem;
     color: var(--primary);
@@ -238,18 +246,11 @@ const { project, images, heroImage } = Astro.props;
     width: 100%;
     height: auto;
     aspect-ratio: 4/3;
-    object-fit: contain;
+    object-fit: cover;
     transition: transform 0.3s;
   }
   .gallery-item:hover .gallery-image {
     transform: scale(1.05);
-  }
-  .gallery-image {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4/3;
-    object-fit: cover;
-    transition: transform 0.3s;
   }
   @media (max-width: 768px) {
     .gallery-grid {
