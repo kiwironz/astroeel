@@ -1,7 +1,8 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
 import { Image } from 'astro:assets';
+import placeholder from '../content/projects/placeholder';
 
 const allProjects = await getCollection('projects');
 const sortedProjects = allProjects.sort((a, b) => 
@@ -14,44 +15,22 @@ const otherProjects = sortedProjects.filter(project => !project.data.featured);
 const categories = [...new Set(allProjects.map(project => project.data.category))];
 
 // Static glob for all project images
-const imageModules = import.meta.glob('../../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
-// Debug glob output and slugs
-console.log('Glob keys:', Object.keys(imageModules));
-console.log('Project slugs:', allProjects.map(p => ({ slug: p.slug, id: p.id })));
+const imageModules = import.meta.glob('../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
 
 async function getThumbnailImage(project: { slug: string; id: string }) {
-  // Try slug first
-  let imageKeys = Object.keys(imageModules)
+  const imageKeys = Object.keys(imageModules)
     .filter(key => key.includes(`/${project.slug}/image-`))
     .sort((a, b) => {
       const numA = parseInt(a.match(/image-(\d+)/)?.[1] || 0);
       const numB = parseInt(b.match(/image-(\d+)/)?.[1] || 0);
       return numA - numB;
     });
-  console.log(`Image keys for slug ${project.slug}:`, imageKeys);
-
-  // Fallback to directory name from project.id
-  if (!imageKeys.length) {
-    const dirName = project.id.split('/')[0];
-    console.log(`Falling back to directory ${dirName} for ${project.slug}`);
-    imageKeys = Object.keys(imageModules)
-      .filter(key => key.includes(`/${dirName}/image-`))
-      .sort((a, b) => {
-        const numA = parseInt(a.match(/image-(\d+)/)?.[1] || 0);
-        const numB = parseInt(b.match(/image-(\d+)/)?.[1] || 0);
-        return numA - numB;
-      });
-    console.log(`Image keys for dir ${dirName}:`, imageKeys);
-  }
 
   const imageKey = imageKeys.find(key => key.includes('image-00')) || imageKeys[0];
   if (!imageKey) {
-    console.warn(`No images found for slug: ${project.slug}, dir: ${project.id.split('/')[0]}, expected path: ../../content/projects/${project.slug}/image-*.{jpg,jpeg,png,webp}`);
-    return '/images/projects/placeholder.jpg';
+    return placeholder;
   }
-  const imageUrl = imageModules[imageKey].default;
-  console.log(`Thumbnail for ${project.slug}: ${imageUrl}`);
-  return imageUrl;
+  return imageModules[imageKey];
 }
 
 // Pre-fetch thumbnails
@@ -102,8 +81,8 @@ const otherWithThumb = otherProjects.map(p => projectThumbnails.find(pt => pt.sl
               <Image 
                 src={project.thumbnail}
                 alt={project.data.title}
-                width={320}
-                height={240}
+                width={400}
+                height={300}
                 loading="lazy"
               />
               <div class="project-overlay">
@@ -152,8 +131,8 @@ const otherWithThumb = otherProjects.map(p => projectThumbnails.find(pt => pt.sl
             <Image 
               src={project.thumbnail}
               alt={project.data.title}
-              width={320}
-              height={240}
+              width={400}
+              height={300}
               loading="lazy"
             />
             <div class="project-overlay">
@@ -293,9 +272,9 @@ const otherWithThumb = otherProjects.map(p => projectThumbnails.find(pt => pt.sl
   
   .project-image img {
     width: 100%;
-    height: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
-    transition: transform 0.3s;
   }
   
   .project-card:hover .project-image img {

@@ -2,11 +2,16 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { Image } from 'astro:assets';
+import placeholder from '../../content/projects/placeholder';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
   const imageModules = import.meta.glob('../../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
+  console.log('imageModules:', Object.keys(imageModules));
+
   const paths = projects.map(project => {
+    console.log('project:', project.slug);
+
     const imageKeys = Object.keys(imageModules)
       .filter(key => key.includes(`/${project.slug}/image-`))
       .sort((a, b) => {
@@ -14,9 +19,18 @@ export async function getStaticPaths() {
         const numB = parseInt(b.match(/image-(\d+)/)?.[1] || 0);
         return numA - numB;
       });
-    const imageUrls = imageKeys.map(key => imageModules[key].default);
-    // Safe find for hero
-    const hero = imageUrls.find(url => typeof url === 'string' && url.includes('image-00')) || '/images/projects/placeholder.jpg';
+    console.log('imageKeys:', imageKeys);
+
+    const imageUrls = imageKeys.map(key => imageModules[key]).filter(Boolean);
+    console.log('imageUrls:', imageUrls);
+
+    let hero = placeholder;
+    if (imageUrls.length > 0) {
+      const heroImageModule = imageUrls.find(url => url.default.src.includes('image-00')) || imageUrls[0];
+      hero = heroImageModule;
+    }
+    console.log('hero:', hero);
+
     return {
       params: { slug: project.slug },
       props: { 
@@ -42,8 +56,8 @@ const { project, images, heroImage } = Astro.props;
       <Image 
         src={heroImage}
         alt={project.data.title}
-        width={600}
-        height={450}
+        width={800}
+        height={600}
         class="hero-image"
       />
       <h1>{project.data.title}</h1>
@@ -134,9 +148,6 @@ const { project, images, heroImage } = Astro.props;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   }
   .hero-image {
-    width: 100%;
-    height: auto;
-    max-height: 400px;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }

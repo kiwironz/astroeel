@@ -1,16 +1,20 @@
 ---
-import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
 import { Image } from 'astro:assets';
+import placeholder from '../content/projects/placeholder';
 
 const projects = await getCollection('projects');
 const recentProjects = projects.slice(0, 2); // First 2 as "recent"
 
 // Static glob for images
-const imageModules = import.meta.glob('../../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
+const imageModules = import.meta.glob('../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
 async function getProjectImage(slug: string, num = '00') {
   const imageKey = Object.keys(imageModules).find(key => key.includes(`/${slug}/image-${num}`));
-  return imageKey ? imageModules[imageKey].default : '/images/projects/placeholder.jpg';
+  if (!imageKey) {
+    return placeholder;
+  }
+  return imageModules[imageKey];
 }
 
 const recentWithImages = await Promise.all(recentProjects.map(async project => ({
@@ -50,7 +54,7 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
     </div>
     <div class="hero-image">
       <Image 
-        src={recentWithImages[0]?.image || '/images/projects/placeholder.jpg'}
+        src={placeholder}
         alt="Custom electronic device with sensors and LoRaWAN capability"
         width={500}
         height={375}
@@ -100,8 +104,8 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
           <Image 
             src={project.image}
             alt={project.data.title}
-            width={300}
-            height={225}
+            width={400}
+            height={300}
           />
           <div class="project-content">
             <h3>{project.data.title}</h3>
@@ -224,7 +228,6 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
     color: white;
   }
   .hero-image img {
-    width: 100%;
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
   }
@@ -277,7 +280,8 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
   }
   .project-card img {
     width: 100%;
-    height: 200px;
+    height: auto;
+    aspect-ratio: 4 / 3;
     object-fit: cover;
   }
   .project-content {
