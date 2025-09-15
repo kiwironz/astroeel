@@ -2,7 +2,8 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { Image } from 'astro:assets';
-import placeholder from '../content/projects/placeholder';
+// Import placeholder
+import placeholderImage from '../content/projects/placeholder.jpg';
 
 const allProjects = await getCollection('projects');
 const sortedProjects = allProjects.sort((a, b) => 
@@ -26,11 +27,18 @@ async function getThumbnailImage(project: { slug: string; id: string }) {
       return numA - numB;
     });
 
+  // Look for image-00 first, then any other image
   const imageKey = imageKeys.find(key => key.includes('image-00')) || imageKeys[0];
-  if (!imageKey) {
-    return placeholder;
+  
+  if (imageKey && imageModules[imageKey]?.default) {
+    return imageModules[imageKey];
   }
-  return imageModules[imageKey];
+  
+  // Return placeholder from the glob
+  const placeholderKey = Object.keys(imageModules).find(key => 
+    key.includes('/placeholder.jpg')
+  );
+  return placeholderKey ? imageModules[placeholderKey] : null;
 }
 
 // Pre-fetch thumbnails

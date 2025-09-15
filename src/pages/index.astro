@@ -2,25 +2,32 @@
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import { Image } from 'astro:assets';
-import placeholder from '../content/projects/placeholder';
 
 const projects = await getCollection('projects');
-const recentProjects = projects.slice(0, 2); // First 2 as "recent"
+const recentProjects = projects.slice(0, 2);
 
-// Static glob for images
 const imageModules = import.meta.glob('../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
-async function getProjectImage(slug: string, num = '00') {
-  const imageKey = Object.keys(imageModules).find(key => key.includes(`/${slug}/image-${num}`));
-  if (!imageKey) {
-    return placeholder;
-  }
-  return imageModules[imageKey];
+
+// Get placeholder - we know this exists from the debug
+const placeholderKey = '../content/projects/placeholder.jpg';
+const placeholderImage = imageModules[placeholderKey];
+
+async function getProjectImage(slug: string) {
+  const imageKey = `../content/projects/${slug}/image-00.jpg`;
+  
+  // Return the exact module object, no processing
+  return imageModules[imageKey] || placeholderImage;
 }
 
 const recentWithImages = await Promise.all(recentProjects.map(async project => ({
   ...project,
   image: await getProjectImage(project.slug)
 })));
+
+// Debug what we're actually passing to templates
+console.log('placeholderImage type:', typeof placeholderImage);
+console.log('placeholderImage:', placeholderImage);
+console.log('First project image:', recentWithImages[0]?.image);
 ---
 
 <Layout 
@@ -53,12 +60,11 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
       </div>
     </div>
     <div class="hero-image">
-      <Image 
-        src={placeholder}
-        alt="Custom electronic device with sensors and LoRaWAN capability"
-        width={500}
-        height={375}
-      />
+      <div>
+        <p>Placeholder type: {typeof placeholderImage}</p>
+        <p>Placeholder exists: {!!placeholderImage}</p>
+        <p>Placeholder default exists: {!!(placeholderImage?.default)}</p>
+      </div>
     </div>
   </div>
 </section>
@@ -99,23 +105,23 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
   <div class="container">
     <h2>Recent Projects</h2>
     <div class="projects-grid">
-      {recentWithImages.map(project => (
-        <div class="project-card">
-          <Image 
-            src={project.image}
-            alt={project.data.title}
-            width={400}
-            height={300}
-          />
-          <div class="project-content">
-            <h3>{project.data.title}</h3>
-            <p>{project.data.description}</p>
-            <div class="project-tags">
-              {project.data.tags.slice(0, 3).map(tag => <span>{tag}</span>)}
-            </div>
+    {recentWithImages.map(project => (
+      <div class="project-card">
+        <div>
+          <p>Project: {project.slug}</p>
+          <p>Image type: {typeof project.image}</p>
+          <p>Image exists: {!!project.image}</p>
+          <p>Image default exists: {!!(project.image?.default)}</p>
+        </div>
+        <div class="project-content">
+          <h3>{project.data.title}</h3>
+          <p>{project.data.description}</p>
+          <div class="project-tags">
+            {project.data.tags.slice(0, 3).map(tag => <span>{tag}</span>)}
           </div>
         </div>
-      ))}
+      </div>
+    ))}
     </div>
     <div class="projects-cta">
       <a href="/projects" class="btn-primary">View All Projects</a>

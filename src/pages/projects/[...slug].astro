@@ -2,16 +2,19 @@
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { Image } from 'astro:assets';
-import placeholder from '../../content/projects/placeholder';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
   const imageModules = import.meta.glob('../../content/projects/**/*.{jpg,jpeg,png,webp}', { eager: true });
-  console.log('imageModules:', Object.keys(imageModules));
-
+  
+  // Find placeholder in the glob
+  const placeholderKey = Object.keys(imageModules).find(key => 
+    key.includes('/placeholder.jpg')
+  );
+  const placeholderModule = placeholderKey ? imageModules[placeholderKey] : null;
+  
   const paths = projects.map(project => {
-    console.log('project:', project.slug);
-
+    // Find all images for this project
     const imageKeys = Object.keys(imageModules)
       .filter(key => key.includes(`/${project.slug}/image-`))
       .sort((a, b) => {
@@ -19,17 +22,22 @@ export async function getStaticPaths() {
         const numB = parseInt(b.match(/image-(\d+)/)?.[1] || 0);
         return numA - numB;
       });
-    console.log('imageKeys:', imageKeys);
 
-    const imageUrls = imageKeys.map(key => imageModules[key]).filter(Boolean);
-    console.log('imageUrls:', imageUrls);
+    // Get image modules, filtering out any undefined ones
+    const imageUrls = imageKeys
+      .map(key => imageModules[key])
+      .filter(module => module && module.default);
 
-    let hero = placeholder;
+    // Set hero image - prefer image-00, fallback to first available, then placeholder
+    let hero = placeholderModule;
     if (imageUrls.length > 0) {
-      const heroImageModule = imageUrls.find(url => url.default.src.includes('image-00')) || imageUrls[0];
-      hero = heroImageModule;
+      const heroImageModule = imageUrls.find(url => 
+        url.default.src.includes('image-00')
+      ) || imageUrls[0];
+      if (heroImageModule) {
+        hero = heroImageModule;
+      }
     }
-    console.log('hero:', hero);
 
     return {
       params: { slug: project.slug },
@@ -148,9 +156,14 @@ const { project, images, heroImage } = Astro.props;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   }
   .hero-image {
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 800px;
+      height: auto;
+      object-fit: cover;
+      aspect-ratio: 4/3;
+    }
   .project-hero h1 {
     font-size: 2.5rem;
     color: var(--primary);
@@ -231,12 +244,20 @@ const { project, images, heroImage } = Astro.props;
   .gallery-item:hover .gallery-image {
     transform: scale(1.05);
   }
+  .gallery-image {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
   @media (max-width: 768px) {
     .gallery-grid {
       grid-template-columns: 1fr;
     }
     .hero-image {
       max-height: 300px;
+      aspect-ratio: 16/9;
     }
   }
 </style>
