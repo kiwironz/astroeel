@@ -87,12 +87,13 @@ const otherWithThumb = otherProjects.map(p => projectThumbnails.find(pt => pt.sl
                 <Image 
                   src={project.thumbnail()}
                   alt={project.data.title}
-                  width={400}
-                  height={300}
+                  width={350}
+                  height={260}
                   loading="lazy"
+                  class="project-thumbnail"
                 />
               ) : (
-                <div style="width: 400px; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+                <div style="width: 350px; height: 260px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
                   No image
                 </div>
               )}
@@ -139,19 +140,20 @@ const otherWithThumb = otherProjects.map(p => projectThumbnails.find(pt => pt.sl
       {otherWithThumb.map(project => (
         <article class="project-card" data-category={project.data.category.toLowerCase().replace(/\s+/g, '-')}>
           <div class="project-image">
-            {project.thumbnail ? (
-              <Image 
-                src={project.thumbnail()}
-                alt={project.data.title}
-                width={400}
-                height={300}
-                loading="lazy"
-              />
-            ) : (
-              <div style="width: 400px; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
-                No image
-              </div>
-            )}
+          {project.thumbnail ? (
+            <Image 
+              src={project.thumbnail()}
+              alt={project.data.title}
+              width={320}
+              height={240}
+              loading="lazy"
+              class="project-thumbnail"
+            />
+          ) : (
+            <div style="width: 320px; height: 240px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+              No image
+            </div>
+          )}
             <div class="project-overlay">
               <div class="image-count"><span class="gallery-icon">🖼️</span><span>Gallery</span></div>
             </div>
@@ -419,6 +421,14 @@ const otherWithThumb = otherProjects.map(p => projectThumbnails.find(pt => pt.sl
   
   .project-card.hidden {
     display: none;
+  }
+
+  .project-thumbnail {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    transition: transform 0.3s;
   }
   
   @media (max-width: 768px) {

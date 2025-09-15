@@ -67,12 +67,12 @@ const { project, images, heroImage } = Astro.props;
         <Image 
           src={heroImage()}
           alt={project.data.title}
-          width={800}
-          height={600}
+          width={600}
+          height={400}
           class="hero-image"
         />
       ) : (
-        <div style="width: 800px; height: 600px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+        <div style="width: 600px; height: 400px; background: #f0f0f0; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
           No image available
         </div>
       )}
@@ -137,13 +137,13 @@ const { project, images, heroImage } = Astro.props;
         <div class="gallery-grid">
           {images.map((imageUrl, index) => (
             <div class="gallery-item">
-              <Image 
-                src={imageUrl()}
-                alt={`Project image ${index + 1}`}
-                width={400}
-                height={300}
-                class="gallery-image"
-              />
+            <Image 
+              src={imageUrl()}
+              alt={`Project image ${index + 1}`}
+              width={350}
+              height={260}
+              class="gallery-image"
+            />
             </div>
           ))}
         </div>
@@ -167,10 +167,12 @@ const { project, images, heroImage } = Astro.props;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     width: 100%;
-    max-width: 800px;
+    max-width: 600px;
     height: auto;
     object-fit: cover;
-    aspect-ratio: 4/3;
+    aspect-ratio: 3/2;
+    margin: 0 auto;
+    display: block;
   }
   .project-hero h1 {
     font-size: 2.5rem;
@@ -248,6 +250,7 @@ const { project, images, heroImage } = Astro.props;
     aspect-ratio: 4/3;
     object-fit: cover;
     transition: transform 0.3s;
+    border-radius: 8px;
   }
   .gallery-item:hover .gallery-image {
     transform: scale(1.05);

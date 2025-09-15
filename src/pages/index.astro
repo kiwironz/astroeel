@@ -62,11 +62,12 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
         <Image 
           src={placeholderImage()}
           alt="Custom electronic device with sensors and LoRaWAN capability"
-          width={500}
-          height={375}
+          width={400}
+          height={300}
+          class="hero-main-image"
         />
       ) : (
-        <div style="width: 500px; height: 375px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+        <div style="width: 400px; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
           No image available
         </div>
       )}
@@ -116,11 +117,12 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
             <Image 
               src={project.image()}
               alt={project.data.title}
-              width={400}
-              height={300}
+              width={280}
+              height={210}
+              class="project-thumbnail"
             />
           ) : (
-            <div style="width: 400px; height: 300px; background: #f0f0f0; display: flex; align-items: center; justify-content: center;">
+            <div class="project-thumbnail-placeholder">
               No image
             </div>
           )}
@@ -244,10 +246,18 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
     background: var(--accent);
     color: white;
   }
-  .hero-image img {
+  
+  /* Hero image styling */
+  .hero-main-image {
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    width: 100%;
+    height: auto;
+    max-width: 400px;
+    aspect-ratio: 4/3;
+    object-fit: cover;
   }
+  
   .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -282,7 +292,9 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
     color: var(--primary);
   }
   .projects-grid {
+    display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
     margin-bottom: 3rem;
   }
   .project-card {
@@ -291,27 +303,50 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
     overflow: hidden;
     box-shadow: 0 8px 20px rgba(0,0,0,0.08);
     transition: transform 0.3s;
+    max-width: 350px;
+    margin: 0 auto;
   }
   .project-card:hover {
     transform: translateY(-4px);
   }
-  .project-card img {
+  
+  /* Project thumbnail styling - MUCH SMALLER */
+  .project-thumbnail {
     width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 3;
+    height: 210px;
     object-fit: cover;
+    border-radius: 0;
+    display: block;
   }
+  
+  .project-thumbnail-placeholder {
+    width: 100%;
+    height: 210px;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-light);
+  }
+  
   .project-content {
     padding: 1.5rem;
   }
   .project-content h3 {
     color: var(--primary);
     margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+  }
+  .project-content p {
+    margin-bottom: 1rem;
+    color: var(--text-light);
+    line-height: 1.5;
   }
   .project-tags {
     display: flex;
     gap: 0.5rem;
     margin-top: 1rem;
+    flex-wrap: wrap;
   }
   .project-tags span {
     background: var(--secondary);
@@ -357,6 +392,12 @@ const recentWithImages = await Promise.all(recentProjects.map(async project => (
     }
     .capabilities-grid, .projects-grid {
       grid-template-columns: 1fr;
+    }
+    .project-card {
+      max-width: 100%;
+    }
+    .project-thumbnail {
+      height: 200px;
     }
   }
 </style>
